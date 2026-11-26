@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /cam-on/
+Disallow: /mau-sp/
+Sitemap: https://toydi.vn/sitemap.xml
