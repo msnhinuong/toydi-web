@@ -97,7 +97,7 @@ header.site .pill{color:var(--navy);padding:11px 18px}
 .q{margin-bottom:22px}
 .q p{font-weight:600;margin-bottom:10px;font-size:15px}
 .opts{display:flex;flex-wrap:wrap;gap:8px}
-.opts button{border:1px solid rgba(241,230,227,.4);border-radius:999px;padding:10px 16px;font-size:14px;transition:all .15s}
+.opts button{border:1px solid rgba(241,230,227,.4);border-radius:999px;padding:10px 16px;font-size:14px;transition:background-color .15s,color .15s,border-color .15s}
 .opts button[aria-pressed=true]{background:var(--blush);color:var(--navy);border-color:var(--blush)}
 .result{margin-top:8px;display:none;grid-template-columns:140px 1fr;gap:18px;align-items:center;background:rgba(241,230,227,.06);border:1px solid rgba(241,230,227,.18);border-radius:16px;padding:14px}
 .result.show{display:grid}
@@ -170,7 +170,7 @@ footer .legal{margin-top:36px;padding-top:18px;border-top:1px solid rgba(241,230
 /* floating */
 .float{position:fixed;right:16px;bottom:16px;z-index:30;box-shadow:0 10px 30px rgba(16,31,51,.3)}
 .exit{position:fixed;left:16px;bottom:16px;z-index:30;background:var(--navy);color:var(--cream);border-radius:999px;padding:10px 14px;font:600 11px/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;opacity:.85}
-.toast{position:fixed;left:50%;bottom:84px;transform:translate(-50%,20px);background:var(--navy);color:var(--cream);padding:12px 18px;border-radius:12px;font-size:14px;opacity:0;transition:all .25s var(--ease);z-index:40;max-width:calc(100% - 32px);text-align:center}
+.toast{position:fixed;left:50%;bottom:84px;transform:translate(-50%,20px);background:var(--navy);color:var(--cream);padding:12px 18px;border-radius:12px;font-size:14px;opacity:0;transition:opacity .25s var(--ease),transform .25s var(--ease);z-index:40;max-width:calc(100% - 32px);text-align:center}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 
 
@@ -906,3 +906,11 @@ header.site nav a{white-space:nowrap}
 .iglink{display:flex;width:max-content;max-width:100%;white-space:nowrap;align-items:center;gap:6px;margin-top:10px;font-weight:600;font-size:14.5px;color:#F7D3DC;border-bottom:1.5px solid currentColor;padding-bottom:2px;align-self:flex-start}
 .iglink:hover{color:#fff}
 body:not(.night) .stone .iglink,body:not(.night) .cream .iglink{color:var(--wine)}
+
+/* rà theo web-design-guidelines (26/11) */
+.skip{position:absolute;left:12px;top:-60px;z-index:200;background:#E89AB2;color:#1A1220;padding:10px 16px;border-radius:999px;font-weight:700;transition:top .2s}
+.skip:focus{top:12px}
+#main{scroll-margin-top:90px}
+:focus-visible{outline:2px solid #E89AB2;outline-offset:3px}
+a,button{-webkit-tap-highlight-color:rgba(232,154,178,.25)}
+
