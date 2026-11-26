@@ -7,6 +7,8 @@
   const IG = 'https://ig.me/m/toydi.vn';
   const track = window.tdTrack = (n, p) => { try { if (window.gtag) gtag('event', n, p || {}); } catch (e) {} };
   const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  // chỉ khởi động một phần khi khách cuộn gần tới (trang chủ nhẹ hơn lúc mới mở)
+  const near = window.tdNear = (el, fn) => { if (!('IntersectionObserver' in window)) return fn(); const io = new IntersectionObserver(es => { if (es.some(x => x.isIntersecting)) { io.disconnect(); fn(); } }, { rootMargin: '600px 0px' }); io.observe(el); };
   const store = { get(k) { try { return localStorage.getItem(k) } catch (e) { return null } }, set(k, v) { try { localStorage.setItem(k, v) } catch (e) {} } };
 
   // highlight the current tab (and keep it in view in the sideways mobile menu)
@@ -43,7 +45,7 @@
 
   // quiz: step by step (13/11)
   const quiz = $('#quiz');
-  if (quiz && window.PRODUCTS && window.QTAGS) {
+  if (quiz && window.PRODUCTS && window.QTAGS) near(quiz, () => {
     const ans = {}, Q = $$('.q', quiz), bar = $('.qbar span', quiz), back = $('.qback', quiz), again = $('.qagain', quiz), r = $('.result', quiz);
     let step = 0;
     const steps = () => Q.filter(q => !(q.dataset.k === 'pt' && ans.who === 'chang'));
@@ -85,11 +87,11 @@
     back.onclick = () => { step = Math.max(0, step - 1); show(); };
     again.onclick = () => { for (const k in ans) delete ans[k]; $$('.q button', quiz).forEach(x => x.setAttribute('aria-pressed', 'false')); step = 0; show(); };
     show();
-  }
+  });
 
   // daily: position of the day (filterable, random) + fact
   const daily = $('#daily');
-  if (daily && window.DAILY) {
+  if (daily && window.DAILY) near(daily, () => {
     const P = DAILY.pos, day = Math.floor(Date.now() / 864e5);
     const pool = () => P.map((p, i) => i);
     let pi = day % P.length, fi = day % DAILY.facts.length;
@@ -160,7 +162,7 @@
     $$('[data-spin]').forEach(b => b.onclick = spin);
     if (DAILY.facts.length < 2) $('[data-next-fact]').hidden = true;
     $('[data-next-fact]').onclick = () => { fi = (fi + 1) % DAILY.facts.length; showFact(); };
-  }
+  });
 
   // floating buttons appear once the hero is scrolled past (they would cover the hero buttons on phones)
   const heroEl = $('.hero');
@@ -188,7 +190,11 @@
     hs.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive: true });
     hs.addEventListener('touchend', e => { if (x0 == null) return; const dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 40) go(i + (dx < 0 ? 1 : -1)); x0 = null; });
     document.addEventListener('visibilitychange', () => document.hidden ? clearTimeout(t) : plan());
+    // ảnh nền slide 2 trở đi: gắn sau khi trang tải xong
+    const lb = () => S.forEach(s => { if (s.dataset.bgs) { s.style.cssText += ';' + s.dataset.bgs; delete s.dataset.bgs; } });
+    if (document.readyState === 'complete') setTimeout(lb, 1200); else addEventListener('load', () => setTimeout(lb, 1200));
     go(0);
+    D.forEach(d => d.addEventListener('click', lb)); $$('.harr', hs).forEach(b => b.addEventListener('click', lb)); hs.addEventListener('touchstart', lb, { passive: true, once: true });
   }
 
   // unbox scroll
@@ -269,6 +275,9 @@ document.addEventListener('click', ev => {
 /* feedback băng trượt: tạm dừng khi chạm, nút qua lại nhảy 1 thẻ */
 document.querySelectorAll('.fbslide').forEach(sl => {
   const tr = sl.querySelector('.fbtrack'); let t;
+  // chép thêm một lượt thẻ để băng chạy vòng, chỉ khi khách cuộn gần tới
+  const start = () => { if (!matchMedia('(prefers-reduced-motion: reduce)').matches) tr.querySelectorAll('.fbc').forEach(c => { const k = c.cloneNode(true); k.setAttribute('aria-hidden', 'true'); k.querySelectorAll('a').forEach(a => a.tabIndex = -1); tr.appendChild(k); }); tr.classList.add('go'); };
+  (window.tdNear || ((el, fn) => fn()))(sl, start);
   const hold = () => { sl.classList.add('hold'); clearTimeout(t); t = setTimeout(() => sl.classList.remove('hold'), 4000); };
   sl.addEventListener('touchstart', hold, { passive: true });
   const step = dir => { const a = tr.getAnimations()[0]; if (!a) return; const card = tr.querySelector('.fbc'); const w = card.offsetWidth + 14, tot = tr.scrollWidth / 2;
