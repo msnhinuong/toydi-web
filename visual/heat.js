@@ -3,7 +3,7 @@
   const V = window.VE; if (!V || !V.data) return;
   const root = V.root, D = V.data, GN = Object.fromEntries(D.groups);
   const body = root.querySelector('[data-h="body"]'), sortSel = root.querySelector('[data-h="sort"]'), count = root.querySelector('[data-h="count"]');
-  let filter = 'all';
+  let filter = 'all', lvf = 'all'; const LVN = Object.fromEntries(D.lv.map(([k, n]) => [k, n]));
   const txt = {
     where: (r) => ({ ngoai: 'Bên ngoài', 'ca-hai': 'Cả hai', trong: 'Bên trong' })[r.where] || '—',
     db: (r) => (r.db ? `< ${r.db} dB` : 'chưa công bố'),
@@ -19,7 +19,7 @@
   };
   const td = (cls, t) => { const c = document.createElement('td'); if (cls) c.className = cls; c.textContent = t; return c; };
   const draw = () => {
-    const rs = D.rows.filter((r) => filter === 'all' || r.cats.includes(filter)).sort(SORT[sortSel.value]);
+    const rs = D.rows.filter((r) => (filter === 'all' || r.cats.includes(filter)) && (lvf === 'all' || r.lv === lvf)).sort(SORT[sortSel.value]);
     body.replaceChildren(...rs.map((r) => {
       const tr = document.createElement('tr');
       const a = document.createElement('a'); a.href = `${V.R}san-pham/${r.slug}/index.html`; a.className = 've-hprod';
@@ -28,8 +28,7 @@
       const sm = document.createElement('small'); sm.textContent = r.cats.map((c) => GN[c]).join(' · ') + (r.water ? ' · chống nước' : '');
       s.append(sm); a.append(im, s);
       const c0 = document.createElement('td'); c0.append(a); tr.append(c0);
-      tr.append(td('n', '#' + r.rank));
-      const sc = td('n ve-hsc', r.score); sc.style.setProperty('--p', r.score + '%'); tr.append(sc);
+      const lc = document.createElement('td'); const bd = document.createElement('i'); bd.className = 've-lvb lv-' + r.lv; bd.textContent = LVN[r.lv]; lc.append(bd); tr.append(lc);
       ['where', 'db', 'len', 'price'].forEach((k) => tr.append(td('ve-hc ' + (r.sc[k] ? 'h' + r.sc[k] : 'na'), txt[k](r))));
       return tr;
     }));
@@ -37,6 +36,9 @@
   };
   root.querySelectorAll('[data-f]').forEach((b) => b.addEventListener('click', () => {
     filter = b.dataset.f; root.querySelectorAll('[data-f]').forEach((x) => x.setAttribute('aria-pressed', x === b)); draw(); V.track('heat_filter', { group: filter });
+  }));
+  root.querySelectorAll('[data-l]').forEach((b) => b.addEventListener('click', () => {
+    lvf = b.dataset.l; root.querySelectorAll('[data-l]').forEach((x) => x.setAttribute('aria-pressed', x === b)); draw(); V.track('heat_level', { level: lvf });
   }));
   sortSel.addEventListener('change', () => { draw(); V.track('heat_sort', { by: sortSel.value }); });
   draw();

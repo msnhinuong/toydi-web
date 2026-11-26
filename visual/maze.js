@@ -79,9 +79,9 @@
     me = V.el('circle', { r: S * 0.3, class: 'mz-me' }, svg); place();
     q('name').textContent = cur.name; q('note').textContent = cur.note;
     const fl = q('fails'); fl.innerHTML = '';
-    if (!cur.fails.length) { const li = document.createElement('li'); li.className = 'ok'; li.textContent = 'Không có ngõ cụt: đủ cả 6 tiêu chí.'; fl.append(li); }
+    if (!cur.fails.length) { const li = document.createElement('li'); li.className = 'ok'; li.textContent = 'Không có ngõ cụt.'; fl.append(li); }
     cur.fails.forEach((n) => { const li = document.createElement('li'); li.dataset.n = n; const b = document.createElement('b'); b.textContent = n; li.append(b, ' ' + CR[n].t); fl.append(li); });
-    status(done.has(id) ? 'Bạn đã giải mê cung này. Thử kênh khác?' : `${M.W} × ${M.H} ô. Bắt đầu ở góc trên bên trái.`);
+    status(`${M.W} × ${M.H} ô.`);
   };
   const status = (t) => { q('status').textContent = t; };
   const place = () => { const [x, y] = pt(M, pos).split(','); me.setAttribute('cx', x); me.setAttribute('cy', y); line.setAttribute('points', trail.map((i) => pt(M, i)).join(' ')); };
@@ -99,8 +99,8 @@
       status(`Ngõ cụt #${c.n}: ${c.d}`);
       q('fails').querySelector(`[data-n="${c.n}"]`)?.classList.add('hit');
     } else if (n === M.W * M.H - 1) {
-      if (!done.has(cur.id)) { done.add(cur.id); q('done').textContent = done.size; tabs.find((t) => t.dataset.m === cur.id).classList.add('done'); V.track('maze_done', { channel: cur.id }); }
-      status(`Tới nơi! ${trail.length - 1} bước${hits.size ? `, đi nhầm ${hits.size} ngõ cụt` : ''}. ${done.size < 5 ? 'Thử kênh khác?' : 'Bạn đã đi hết 5 mê cung.'}`);
+      if (!done.has(cur.id)) { done.add(cur.id); V.track('maze_done', { channel: cur.id }); }
+      status(`Tới nơi sau ${trail.length - 1} bước${hits.size ? `, đi nhầm ${hits.size} ngõ cụt` : ''}.`);
     }
   };
   tabs.forEach((t) => t.addEventListener('click', () => load(t.dataset.m)));
@@ -122,30 +122,4 @@
   q('reset').addEventListener('click', () => { load(cur.id); q('solve').textContent = 'Xem lối ra'; });
   load(D.ch[0].id);
 
-  /* --- 5 mê cung cạnh nhau --- */
-  const all = q('all');
-  D.ch.forEach((c) => {
-    const m = make(size(c), c.seed, c.fails.length);
-    const b = document.createElement('button'); b.type = 'button'; b.className = 've-mcard';
-    const s = V.el('svg', { 'aria-hidden': 'true' }, b); drawMaze(s, m, { labels: false, sw: 1.1 });
-    V.el('polyline', { points: m.path.map((i) => pt(m, i)).join(' '), class: 'mz-sol on' }, s);
-    const t = document.createElement('span'); t.textContent = c.name;
-    const sm = document.createElement('small'); sm.textContent = `${m.W} × ${m.H} ô · lối ra dài ${m.path.length - 1} bước · ${c.fails.length} ngõ cụt`;
-    b.append(t, sm); b.style.setProperty('--sz', size(c));
-    b.addEventListener('click', () => { load(c.id); document.getElementById('me-cung').scrollIntoView({ behavior: V.reduce ? 'auto' : 'smooth' }); });
-    all.append(b);
-  });
-
-  /* --- tự dò một shop --- */
-  const box = q('check'), mini = q('mini'), verdict = q('verdict');
-  const upd = () => {
-    const have = [...box.querySelectorAll('input:checked')].map((i) => +i.value);
-    const miss = D.crit.map((c) => c.n).filter((n) => !have.includes(n));
-    const m = make(5 + 2 * miss.length, 7, miss.length);
-    mini.innerHTML = ''; const s = V.el('svg', { role: 'img', 'aria-label': `Mê cung ${m.W} × ${m.H} ô` }, mini); drawMaze(s, m, { fails: miss }); s.style.maxWidth = (m.W * 24 + 20) + 'px';
-    verdict.textContent = !miss.length ? 'Đủ 6/6. Đường ngắn nhất, cứ yên tâm đặt.'
-      : miss.length <= 2 ? `Thiếu ${miss.length} tiêu chí (${miss.map((n) => '#' + n).join(', ')}). Hỏi rõ thêm trước khi chuyển tiền.`
-      : `Thiếu ${miss.length}/6 tiêu chí. Mê cung khá rối, cân nhắc tìm shop khác.`;
-  };
-  box.addEventListener('change', upd); upd();
 })();
