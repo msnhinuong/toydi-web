@@ -891,3 +891,10 @@ header.site nav a{white-space:nowrap}
 @media(max-width:760px){header.site nav{-webkit-mask-image:linear-gradient(90deg,#000 85%,transparent);mask-image:linear-gradient(90deg,#000 85%,transparent)}}
 .afaq{margin-top:34px}.afaq h2{font:500 clamp(26px,2.6vw,32px)/1.2 var(--serif);margin:0 0 14px;color:#F1E6E3}
 @media(max-width:700px){.ball .post h3{font-size:17px;line-height:1.25}}
+/* tìm kiếm sản phẩm */
+.psearch{position:relative;display:block;max-width:520px;margin-top:16px}
+.psearch svg{position:absolute;left:16px;top:50%;width:20px;height:20px;transform:translateY(-50%);fill:none;stroke:var(--navy);stroke-width:2.2;stroke-linecap:round;pointer-events:none}
+.psearch input{width:100%;font:500 16px/1 var(--sans);padding:15px 18px 15px 46px;border-radius:999px;border:0;background:var(--cream);color:var(--navy);outline:none}
+.psearch input:focus-visible{box-shadow:0 0 0 3px #E89AB2}
+.psearch input::placeholder{color:rgba(16,31,51,.5)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}

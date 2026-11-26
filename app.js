@@ -210,17 +210,23 @@
     const grid = $('.grid', shop), cnt = $('.count', shop);
     const st = { cat: new URLSearchParams(location.search).get('dm') || 'all', price: new Set(), tag: new Set() };
     const PR = { z: [0, 100000], a: [0, 200000], b: [200000, 400000], c: [400000, 600000], d: [600000, 1e9] };
+    const norm = (x) => (x || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
+    const IDX = Object.fromEntries(PRODUCTS.map(p => [p.slug, norm([p.name, p.short, p.label, (p.features || []).join(' '), p.slug.replace(/-/g, ' '), (p.tags || []).map(t => ({ remote: 'remote điều khiển từ xa', app: 'app điện thoại yêu xa', nhogon: 'nhỏ gọn', public: 'public', moi: 'người mới' })[t] || '').join(' ')].join(' '))]));
+    const qi = $('#q'); st.q = new URLSearchParams(location.search).get('q') || ''; if (qi) qi.value = st.q;
     const render = () => {
-      const list = PRODUCTS.filter(p => (st.cat === 'all' || p.cats.includes(st.cat))
+      const words = norm(st.q).split(/\s+/).filter(Boolean);
+      const list = PRODUCTS.filter(p => (!words.length || words.every(w => IDX[p.slug].includes(w))) && (st.cat === 'all' || p.cats.includes(st.cat))
         && (!st.price.size || [...st.price].some(k => p.price >= PR[k][0] && p.price < PR[k][1]))
         && (!st.tag.size || [...st.tag].every(t => p.tags.includes(t))));
-      cnt.textContent = `${list.length} món`;
-      grid.innerHTML = list.length ? list.map(card).join('') : '<div class="empty" style="grid-column:1/-1">Chưa có món nào khớp bộ lọc. Bỏ bớt lựa chọn, hoặc nhắn Toydi để được gợi ý riêng.</div>';
+      cnt.textContent = `${list.length} món` + (words.length ? ` cho “${st.q.trim()}”` : '');
+      grid.innerHTML = list.length ? list.map(card).join('') : `<div class="empty" style="grid-column:1/-1">${words.length ? `Chưa tìm thấy món nào cho “${st.q.trim().replace(/[<>&"]/g, '')}”${st.cat !== 'all' || st.price.size || st.tag.size ? ' trong bộ lọc đang chọn' : ''}. Thử từ khóa khác, bỏ bớt bộ lọc, hoặc nhắn Toydi để hỏi.` : 'Chưa có món nào khớp bộ lọc. Bỏ bớt lựa chọn, hoặc nhắn Toydi để được gợi ý riêng.'}</div>`;
     };
     $$('.chips button').forEach(b => { b.setAttribute('aria-pressed', b.dataset.cat === st.cat); b.onclick = () => { st.cat = b.dataset.cat; $$('.chips button').forEach(x => x.setAttribute('aria-pressed', x === b)); render(); }; });
     $$('[data-price]').forEach(i => i.onchange = () => { i.checked ? st.price.add(i.dataset.price) : st.price.delete(i.dataset.price); render(); });
     $$('[data-tag]').forEach(i => i.onchange = () => { i.checked ? st.tag.add(i.dataset.tag) : st.tag.delete(i.dataset.tag); render(); });
     const ft = $('.ftoggle'); if (ft) ft.onclick = () => $('.filters').classList.toggle('open');
+    let qt = 0;
+    if (qi) qi.addEventListener('input', () => { st.q = qi.value; render(); clearTimeout(qt); qt = setTimeout(() => { const u = new URL(location); st.q.trim() ? u.searchParams.set('q', st.q.trim()) : u.searchParams.delete('q'); history.replaceState(null, '', u); if (st.q.trim()) track('search', { search_term: st.q.trim() }); }, 800); });
     render();
   }
   function card(p) {
