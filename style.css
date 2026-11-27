@@ -1011,3 +1011,7 @@ body.has-cartbar{padding-bottom:84px}
 .co-remember{display:flex;gap:8px;align-items:flex-start;font-size:14px;opacity:.85;margin:4px 0 12px}
 .co-remember input{margin-top:3px}
 .co-best{margin-top:8px}
+.ktf{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 20px}
+.ktf .pill{min-width:0;padding:8px 13px;font-size:11.5px;letter-spacing:.06em}
+.ktmore{text-align:center;margin-top:24px}
+.reel .rl-t{display:block;font-family:var(--sans);font-weight:600;font-size:14px;line-height:1.35;margin-bottom:4px;text-wrap:balance}

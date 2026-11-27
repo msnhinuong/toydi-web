@@ -246,7 +246,7 @@
     const th = [...g.querySelectorAll('.th')], sl = [...g.querySelectorAll('.slot')];
     th.forEach(b => b.onclick = () => {
       const k = b.dataset.k;
-      th.forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-selected', x === b); });
+      th.forEach(x => { x.classList.toggle('solid', x === b); x.setAttribute('aria-selected', x === b); });
       sl.forEach(s => {
         const on = s.dataset.k === k; s.classList.toggle('on', on);
         const v = s.querySelector('video'); if (!v) return;
@@ -302,3 +302,23 @@ document.addEventListener('click', ev => {
   if (a.closest('.art') && /\/san-pham\/[^/]+\//.test(a.href)) t('post_product_click', { product: a.href.split('/san-pham/')[1].split('/')[0], post: location.pathname.split('/cam-nang/')[1]?.split('/')[0] || '' });
   else if (/instagram\.com/.test(a.href)) t('instagram_click', { link: a.href });
 });
+
+// Góc 18+: lọc + xem thêm
+(() => {
+  const g = document.getElementById('ktg'); if (!g) return;
+  const more = document.getElementById('ktmore'); let k = '', lim = 24;
+  const show = () => {
+    let n = 0, tot = 0;
+    g.querySelectorAll('.reel').forEach((f) => {
+      const ok = !k || f.dataset.k === k; if (ok) tot++;
+      const vis = ok && n < lim; if (vis) { n++; const v = f.querySelector('video'); if (v.dataset.poster) { v.poster = v.dataset.poster; delete v.dataset.poster; } }
+      f.hidden = !vis; if (!vis && f.classList.contains('on')) { f.classList.remove('on'); f.querySelector('video').pause(); }
+    });
+    more.hidden = n >= tot;
+  };
+  document.querySelectorAll('[data-kf]').forEach((b) => b.addEventListener('click', () => {
+    document.querySelectorAll('[data-kf]').forEach((x) => x.classList.toggle('solid', x === b)); k = b.dataset.kf; lim = 24; show();
+  }));
+  more.addEventListener('click', () => { lim += 24; show(); });
+  show();
+})();
