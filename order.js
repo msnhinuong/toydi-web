@@ -19,7 +19,14 @@
   try { cart = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { cart = {}; }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(cart)); } catch (e) {} count(); };
   const lines = () => Object.values(cart).filter((x) => x && x.qty > 0);
-  const totals = () => { const sub = lines().reduce((s, x) => s + x.p * x.qty, 0); const ship = !sub || sub >= FREE ? 0 : SHIP; return { sub, ship, tot: sub + ship }; };
+  // combo: đồ chơi + gel hoặc bao cao su → tự giảm 5% tiền hàng (khớp với Apps Script)
+  const KIND = Object.fromEntries((window.PRODUCTS || []).map((p) => [p.slug, p.k || '']));
+  const combo = () => { const ks = new Set(lines().map((x) => KIND[x.slug])); return ks.has('toy') && (ks.has('gel') || ks.has('bcs')); };
+  const totals = () => {
+    const sub = lines().reduce((s, x) => s + x.p * x.qty, 0); const ship = !sub || sub >= FREE ? 0 : SHIP;
+    const disc = combo() ? Math.round(sub * 0.05 / 1000) * 1000 : 0;
+    return { sub, ship, disc, tot: sub - disc + ship };
+  };
   let bar = null;
   const count = () => {
     const n = lines().reduce((s, x) => s + x.qty, 0);
@@ -28,7 +35,7 @@
     if ($('#checkout') || $('.mbar')) return;
     if (!bar) { bar = document.createElement('a'); bar.className = 'cartbar'; bar.href = R + 'dat-hang/index.html'; document.body.append(bar); }
     const t = totals();
-    bar.innerHTML = `<span><b>${n} món</b> · ${vnd(t.sub)}${t.sub < FREE ? `<small>Thêm ${vnd(FREE - t.sub)} để miễn phí ship</small>` : '<small>Đã được miễn phí ship</small>'}</span><i>Đặt hàng →</i>`;
+    bar.innerHTML = `<span><b>${n} món</b> · ${vnd(t.sub - t.disc)}${t.disc ? ' (đã −5%)' : ''}${t.sub < FREE ? `<small>Thêm ${vnd(FREE - t.sub)} để miễn phí ship</small>` : '<small>Đã được miễn phí ship</small>'}</span><i>Đặt hàng →</i>`;
     bar.hidden = !n; document.body.classList.toggle('has-cartbar', !!n);
   };
   const item = (el) => ({ slug: el.dataset.slug, n: el.dataset.n, p: +el.dataset.p, img: el.dataset.img });
@@ -63,10 +70,12 @@
     $('#co-items').innerHTML = ls.length ? ls.map((x) => `<div class="co-item"><a href="${R}san-pham/${x.slug}/index.html"><img src="${R}${x.img}" alt="" width="88" height="88"></a><div><a href="${R}san-pham/${x.slug}/index.html"><b>${esc(x.n)}</b></a><small>${vnd(x.p)}</small></div><div class="co-qty"><button type="button" data-q="${x.slug}" data-d="-1" aria-label="Bớt ${esc(x.n)}">−</button><span>${x.qty}</span><button type="button" data-q="${x.slug}" data-d="1" aria-label="Thêm ${esc(x.n)}">+</button></div></div>`).join('')
       : `<p class="co-empty">Giỏ đang trống. <a href="${R}san-pham/index.html">Xem tất cả sản phẩm →</a></p>${(() => { const best = (window.PRODUCTS || []).filter((p) => /bán chạy|best/i.test(p.label || '')).slice(0, 4); const pick = best.length ? best : (window.PRODUCTS || []).filter((p) => p.cats && p.cats.includes('nang')).slice(0, 4); return pick.length ? `<p class="co-h3">Gợi ý cho bạn</p><div class="co-upg co-best">${pick.map((p) => `<div class="co-up"><a href="${R}san-pham/${p.slug}/index.html"><img src="${R}${p.img}" alt="" width="300" height="300" loading="lazy"></a><div><b>${esc(p.name)}</b><small>${vnd(p.price)}</small></div><button type="button" class="pill" data-add data-slug="${p.slug}" data-n="${esc(p.name)}" data-p="${p.price}" data-img="${p.img}">+ Thêm</button></div>`).join('')}</div>` : ''; })()}`;
     const left = FREE - t.sub;
-    $('#co-free').innerHTML = t.sub ? (left > 0 ? `Thêm <b>${vnd(left)}</b> nữa để được miễn phí ship` : '<b>Đơn được miễn phí ship</b>') + `<i><span style="width:${Math.min(100, (t.sub / FREE) * 100)}%"></span></i>` : '';
+    const ks = new Set(ls.map((x) => KIND[x.slug]));
+    const hint = ks.has('toy') && !t.disc ? '<p class="co-hint">Thêm 1 gel bôi trơn hoặc bao cao su để được <b>giảm 5%</b> cả đơn.</p>' : t.disc ? '<p class="co-hint ok">Đã áp dụng <b>giảm 5%</b> combo đồ chơi + gel/bao cao su.</p>' : '';
+    $('#co-free').innerHTML = hint + (t.sub ? (left > 0 ? `Thêm <b>${vnd(left)}</b> nữa để được miễn phí ship` : '<b>Đơn được miễn phí ship</b>') + `<i><span style="width:${Math.min(100, (t.sub / FREE) * 100)}%"></span></i>` : '');
     const ups = UPS.filter((s) => P[s] && !cart[s]).slice(0, 2);
     $('#co-ups').innerHTML = ls.length && ups.length ? `<p class="co-h3">Thường mua kèm</p><div class="co-upg">${ups.map((s) => { const p = P[s]; return `<div class="co-up"><img src="${R}${p.img}" alt="" width="300" height="300" loading="lazy"><div><b>${esc(p.name)}</b><small>${vnd(p.price)}</small></div><button type="button" class="pill" data-add data-slug="${s}" data-n="${esc(p.name)}" data-p="${p.price}" data-img="${p.img}">+ Thêm</button></div>`; }).join('')}</div>` : '';
-    $('#co-sum').innerHTML = t.sub ? `<p><span>Tạm tính</span><span>${vnd(t.sub)}</span></p><p><span>Phí ship</span><span>${t.ship ? vnd(t.ship) : 'Miễn phí'}</span></p><p class="tot"><span>Tổng</span><span>${vnd(t.tot)}</span></p>` : '';
+    $('#co-sum').innerHTML = t.sub ? `<p><span>Tạm tính</span><span>${vnd(t.sub)}</span></p>${t.disc ? `<p class="co-disc"><span>Combo đồ chơi + gel/bao cao su (−5%)</span><span>−${vnd(t.disc)}</span></p>` : ''}<p><span>Phí ship</span><span>${t.ship ? vnd(t.ship) : 'Miễn phí'}</span></p><p class="tot"><span>Tổng</span><span>${vnd(t.tot)}</span></p>` : '';
     $('#co-form').hidden = !ls.length;
     $('#co-submit').textContent = `Xác nhận đặt hàng · ${vnd(t.tot)}`;
   };
