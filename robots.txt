@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /
 Disallow: /cam-on/
+Disallow: /dat-hang/
 Disallow: /mau-sp/
 Sitemap: https://toydi.vn/sitemap.xml

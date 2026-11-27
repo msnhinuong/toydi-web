@@ -236,7 +236,7 @@
     render();
   }
   function card(p) {
-    return `<a class="card" href="${ROOT}san-pham/${p.slug}/index.html"><div class="ph"><img src="${ROOT}${p.img}" alt="${p.name}" width="600" height="600" loading="lazy">${p.label ? `<span class="tag">${p.label}</span>` : ''}${p.noimg ? `<span class="ph-name">${p.name}<small>Ảnh đang cập nhật</small></span>` : ''}</div><h3>${p.name}</h3><p class="short">${p.short}</p><div class="row"><span class="price">${p.price.toLocaleString('vi-VN')}đ</span><span class="dm" data-dm="${p.name}">Nhắn tin đặt</span></div></a>`;
+    return `<a class="card" href="${ROOT}san-pham/${p.slug}/index.html"><div class="ph"><img src="${ROOT}${p.img}" alt="${p.name}" width="600" height="600" loading="lazy">${p.label ? `<span class="tag">${p.label}</span>` : ''}${p.noimg ? `<span class="ph-name">${p.name}<small>Ảnh đang cập nhật</small></span>` : ''}</div><h3>${p.name}</h3><p class="short">${p.short}</p><div class="row"><span class="price">${p.price.toLocaleString('vi-VN')}đ</span><span class="dm ord-off" data-dm="${p.name}">Nhắn tin đặt</span><span class="dm ord-on" role="button" tabindex="0" data-add data-slug="${p.slug}" data-n="${p.name}" data-p="${p.price}" data-img="${p.img}">+ Thêm vào giỏ</span></div></a>`;
   }
   window.toydiCard = card;
 })();
