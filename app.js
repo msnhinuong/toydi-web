@@ -28,9 +28,9 @@
     e.preventDefault();
     const item = b.dataset.dm;
     track('generate_lead', { item: item || '(tư vấn)', where: b.className.includes('float') ? 'nút nổi' : b.closest('header') ? 'đầu trang' : b.closest('.mbar') ? 'thanh mua' : 'trong trang' });
-    const msg = item ? `Chào Toydi, mình muốn đặt: ${item}. Mã đơn đầu qua web: WEB10` : 'Chào Toydi, mình cần tư vấn. Mã đơn đầu qua web: WEB10';
+    const msg = item ? `Chào Toydi, mình muốn hỏi về: ${item}` : 'Chào Toydi, mình cần tư vấn';
     // open Instagram inside the tap itself (a delayed open is blocked on iPhone Safari); copy the message at the same time
-    try { navigator.clipboard.writeText(msg).then(() => say('Đã chép tin nhắn kèm mã WEB10, dán vào Instagram để đặt nhé'), () => {}); } catch (err) {}
+    try { navigator.clipboard.writeText(msg).then(() => say('Đã chép sẵn tin nhắn, dán vào Instagram để hỏi Toydi nhé'), () => {}); } catch (err) {}
     const w = window.open(IG, '_blank', 'noopener');
     if (!w) location.href = IG;
   });
