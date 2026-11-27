@@ -20,7 +20,17 @@
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(cart)); } catch (e) {} count(); };
   const lines = () => Object.values(cart).filter((x) => x && x.qty > 0);
   const totals = () => { const sub = lines().reduce((s, x) => s + x.p * x.qty, 0); const ship = !sub || sub >= FREE ? 0 : SHIP; return { sub, ship, tot: sub + ship }; };
-  const count = () => { const n = lines().reduce((s, x) => s + x.qty, 0); $$('[data-cart-count]').forEach((b) => { b.textContent = n; b.hidden = !n; }); };
+  let bar = null;
+  const count = () => {
+    const n = lines().reduce((s, x) => s + x.qty, 0);
+    $$('[data-cart-count]').forEach((b) => { b.textContent = n; b.hidden = !n; });
+    // thanh giỏ dính dưới màn hình (trừ trang đặt hàng và trang sản phẩm đã có thanh mua riêng)
+    if ($('#checkout') || $('.mbar')) return;
+    if (!bar) { bar = document.createElement('a'); bar.className = 'cartbar'; bar.href = R + 'dat-hang/index.html'; document.body.append(bar); }
+    const t = totals();
+    bar.innerHTML = `<span><b>${n} món</b> · ${vnd(t.sub)}${t.sub < FREE ? `<small>Thêm ${vnd(FREE - t.sub)} để miễn phí ship</small>` : '<small>Đã được miễn phí ship</small>'}</span><i>Đặt hàng →</i>`;
+    bar.hidden = !n; document.body.classList.toggle('has-cartbar', !!n);
+  };
   const item = (el) => ({ slug: el.dataset.slug, n: el.dataset.n, p: +el.dataset.p, img: el.dataset.img });
   const add = (it, q = 1) => { if (!it.slug || !it.p) return; const c = cart[it.slug] || { ...it, qty: 0 }; c.qty = Math.min(10, c.qty + q); Object.assign(c, it, { qty: c.qty }); cart[it.slug] = c; save(); track('add_to_cart', { currency: 'VND', value: it.p, items: [{ item_id: it.slug, item_name: it.n, price: it.p, quantity: q }] }); };
   const toast = (h) => { const t = $('.toast'); if (!t) return; t.innerHTML = h; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 3600); };
@@ -32,7 +42,9 @@
     const el = a || b;
     if (b) { if (!cart[el.dataset.slug]) add(item(el)); track('begin_checkout', { currency: 'VND', value: totals().tot }); location.href = R + 'dat-hang/index.html'; return; }
     add(item(el));
-    toast(`Đã thêm ${esc(el.dataset.n)} vào giỏ · <a href="${R}dat-hang/index.html">Xem giỏ</a>`);
+    if (el.dataset.also) { const [slug, n, p, img] = el.dataset.also.split('|'); if (!cart[slug]) add({ slug, n, p: +p, img }); }
+    toast(`Đã thêm ${esc(el.dataset.also ? 'cả hai món' : el.dataset.n)} vào giỏ · <a href="${R}dat-hang/index.html">Xem giỏ</a>`);
+    document.dispatchEvent(new Event('td:cart'));
     if (el.classList.contains('pill')) { const o = el.textContent; el.textContent = '✓ Đã thêm'; setTimeout(() => { el.textContent = o; }, 1400); }
   }, true);
   document.addEventListener('keydown', (ev) => { const el = ev.target.closest && ev.target.closest('span[data-add]'); if (el && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); el.click(); } });
@@ -49,7 +61,7 @@
   const render = () => {
     const ls = lines(), t = totals();
     $('#co-items').innerHTML = ls.length ? ls.map((x) => `<div class="co-item"><a href="${R}san-pham/${x.slug}/index.html"><img src="${R}${x.img}" alt="" width="88" height="88"></a><div><a href="${R}san-pham/${x.slug}/index.html"><b>${esc(x.n)}</b></a><small>${vnd(x.p)}</small></div><div class="co-qty"><button type="button" data-q="${x.slug}" data-d="-1" aria-label="Bớt ${esc(x.n)}">−</button><span>${x.qty}</span><button type="button" data-q="${x.slug}" data-d="1" aria-label="Thêm ${esc(x.n)}">+</button></div></div>`).join('')
-      : `<p class="co-empty">Giỏ đang trống. <a href="${R}san-pham/index.html">Xem sản phẩm →</a></p>`;
+      : `<p class="co-empty">Giỏ đang trống. <a href="${R}san-pham/index.html">Xem tất cả sản phẩm →</a></p>${(() => { const best = (window.PRODUCTS || []).filter((p) => /bán chạy|best/i.test(p.label || '')).slice(0, 4); const pick = best.length ? best : (window.PRODUCTS || []).filter((p) => p.cats && p.cats.includes('nang')).slice(0, 4); return pick.length ? `<p class="co-h3">Gợi ý cho bạn</p><div class="co-upg co-best">${pick.map((p) => `<div class="co-up"><a href="${R}san-pham/${p.slug}/index.html"><img src="${R}${p.img}" alt="" width="300" height="300" loading="lazy"></a><div><b>${esc(p.name)}</b><small>${vnd(p.price)}</small></div><button type="button" class="pill" data-add data-slug="${p.slug}" data-n="${esc(p.name)}" data-p="${p.price}" data-img="${p.img}">+ Thêm</button></div>`).join('')}</div>` : ''; })()}`;
     const left = FREE - t.sub;
     $('#co-free').innerHTML = t.sub ? (left > 0 ? `Thêm <b>${vnd(left)}</b> nữa để được miễn phí ship` : '<b>Đơn được miễn phí ship</b>') + `<i><span style="width:${Math.min(100, (t.sub / FREE) * 100)}%"></span></i>` : '';
     const ups = UPS.filter((s) => P[s] && !cart[s]).slice(0, 2);
@@ -64,8 +76,10 @@
     c.qty += +q.dataset.d; if (c.qty <= 0) delete cart[q.dataset.q];
     save(); render();
   });
-  document.addEventListener('click', (ev) => { if (ev.target.closest('#co-ups [data-add]')) setTimeout(render, 0); });
+  document.addEventListener('td:cart', render);
   const f = $('#co-form');
+  const MEM = 'td_buyer';
+  try { const m = JSON.parse(localStorage.getItem(MEM) || 'null'); if (m) { ['phone', 'contact', 'addr', 'name'].forEach((k) => { if (m[k]) f.elements[k].value = m[k]; }); f.remember.checked = true; } } catch (e) {}
   f.addEventListener('change', (ev) => { if (ev.target.name === 'pay') $('#co-bank').hidden = ev.target.value !== 'ck'; });
   $$('.co-copy').forEach((b) => b.addEventListener('click', () => copy(b)));
   function copy(b) { const txt = b.dataset.copy; const ok = () => { const o = b.textContent; b.textContent = 'Đã chép'; setTimeout(() => { b.textContent = o; }, 1200); }; try { navigator.clipboard.writeText(txt).then(ok, ok); } catch (e) { ok(); } }
@@ -95,6 +109,7 @@
       const res = await fetch(API, { method: 'POST', body: JSON.stringify(payload), redirect: 'follow' });
       const d = await res.json();
       if (!d.ok) throw Object.assign(new Error(d.error), { code: d.error });
+      try { if (f.remember.checked) localStorage.setItem(MEM, JSON.stringify({ phone: payload.phone, contact: payload.contact, addr: payload.addr, name: payload.name })); else localStorage.removeItem(MEM); } catch (e) {}
       done(d, payload);
     } catch (err) {
       $('#co-fail').hidden = false;
