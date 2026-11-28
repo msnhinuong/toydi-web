@@ -89,7 +89,7 @@
   document.addEventListener('td:cart', render);
   const f = $('#co-form');
   const MEM = 'td_buyer';
-  try { const m = JSON.parse(localStorage.getItem(MEM) || 'null'); if (m) { ['phone', 'contact', 'addr', 'name'].forEach((k) => { if (m[k]) f.elements[k].value = m[k]; }); f.remember.checked = true; } } catch (e) {}
+  try { const m = JSON.parse(localStorage.getItem(MEM) || 'null'); if (m) { ['phone', 'contact', 'ig', 'addr', 'name'].forEach((k) => { if (m[k]) f.elements[k].value = m[k]; }); f.remember.checked = true; } } catch (e) {}
   // chuyển khoản: mã tham chiếu tạo sẵn trên máy, khách chuyển trước rồi tải ảnh giao dịch mới được gửi đơn
   const REF = (() => { try { const o = sessionStorage.getItem('td_ref'); if (o) return o; } catch (e) {} const a = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let r = 'TOYDI'; for (let i = 0; i < 6; i++) r += a[Math.floor(Math.random() * a.length)]; try { sessionStorage.setItem('td_ref', r); } catch (e) {} return r; })();
   let receipt = null;
@@ -134,27 +134,29 @@
     const ph = f.phone.value.replace(/[\s.\-]/g, '');
     bad.push(setErr('phone', /^(0|\+84)\d{9}$/.test(ph) ? '' : 'Số điện thoại cần 10 số, ví dụ 0901234567.'));
     const ct = f.contact.value.trim();
-    bad.push(setErr('contact', /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(ct) || /^@?[a-z0-9._]{2,30}$/i.test(ct) ? '' : 'Điền tên Instagram (ví dụ @vy.nguyen) hoặc email để Toydi xác nhận đơn.'));
+    bad.push(setErr('contact', /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(ct) ? '' : 'Điền email để nhận xác nhận đơn, ví dụ vy.nguyen@gmail.com.'));
+    const ig = f.ig.value.trim();
+    bad.push(setErr('ig', !ig || /^@?[a-z0-9._]{2,30}$/i.test(ig) ? '' : 'Tên Instagram chỉ gồm chữ, số, dấu chấm và gạch dưới, ví dụ @vy.nguyen.'));
     const ad = f.addr.value.trim();
     bad.push(setErr('addr', ad.length >= 12 && /\d|đường|thôn|ấp|xóm|ngõ|hẻm|kiệt/i.test(ad) ? '' : 'Ghi đủ số nhà, đường, phường/xã, quận/huyện, tỉnh/thành (theo địa chỉ cũ) giúp shipper.'));
     const first = bad.find(Boolean); if (first) first.focus();
     return !first;
   };
-  ['phone', 'contact', 'addr'].forEach((n) => f.elements[n].addEventListener('blur', () => { if (f.elements[n].closest('.co-f').classList.contains('bad')) check(); }));
+  ['phone', 'contact', 'ig', 'addr'].forEach((n) => f.elements[n].addEventListener('blur', () => { if (f.elements[n].closest('.co-f').classList.contains('bad')) check(); }));
 
-  const ERR = { phone: 'Số điện thoại chưa đúng, bạn xem lại giúp Toydi nhé.', contact: 'Instagram hoặc email chưa đúng, bạn xem lại giúp Toydi nhé.', addr: 'Địa chỉ còn thiếu, bạn ghi rõ hơn giúp Toydi nhé.', receipt: 'Ảnh chuyển khoản chưa gửi được, bạn chọn lại ảnh giúp Toydi nhé.', items: 'Giỏ hàng có món không còn bán, bạn tải lại trang giúp Toydi nhé.', busy: 'Bạn vừa gửi đơn rồi. Đợi vài phút hoặc nhắn Instagram nếu cần sửa đơn.', server: 'Hệ thống đang bận.' };
+  const ERR = { phone: 'Số điện thoại chưa đúng, bạn xem lại giúp Toydi nhé.', contact: 'Email chưa đúng, bạn xem lại giúp Toydi nhé.', addr: 'Địa chỉ còn thiếu, bạn ghi rõ hơn giúp Toydi nhé.', receipt: 'Ảnh chuyển khoản chưa gửi được, bạn chọn lại ảnh giúp Toydi nhé.', items: 'Giỏ hàng có món không còn bán, bạn tải lại trang giúp Toydi nhé.', busy: 'Bạn vừa gửi đơn rồi. Đợi vài phút hoặc nhắn Instagram nếu cần sửa đơn.', server: 'Hệ thống đang bận.' };
   f.addEventListener('submit', async (ev) => {
     ev.preventDefault();
     if (!check()) return;
     if (isCK() && !receipt) { $('#co-rc-er').textContent = 'Bạn tải ảnh chụp giao dịch chuyển khoản lên trước nhé.'; $('#co-rc').scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
     const b = $('#co-submit'); b.disabled = true; b.textContent = 'Đang gửi đơn…';
     $('#co-fail').hidden = true;
-    const payload = { phone: f.phone.value.trim(), contact: f.contact.value.trim(), addr: f.addr.value.trim(), name: f.name.value.trim(), note: f.note.value.trim(), pay: f.pay.value, website: f.website.value, ref: isCK() ? REF : '', receipt: isCK() ? receipt : '', items: lines().map((x) => ({ slug: x.slug, qty: x.qty })) };
+    const payload = { phone: f.phone.value.trim(), contact: f.contact.value.trim(), ig: f.ig.value.trim(), addr: f.addr.value.trim(), name: f.name.value.trim(), note: f.note.value.trim(), pay: f.pay.value, website: f.website.value, ref: isCK() ? REF : '', receipt: isCK() ? receipt : '', items: lines().map((x) => ({ slug: x.slug, qty: x.qty })) };
     try {
       const res = await fetch(API, { method: 'POST', body: JSON.stringify(payload), redirect: 'follow' });
       const d = await res.json();
       if (!d.ok) throw Object.assign(new Error(d.error), { code: d.error });
-      try { if (f.remember.checked) localStorage.setItem(MEM, JSON.stringify({ phone: payload.phone, contact: payload.contact, addr: payload.addr, name: payload.name })); else localStorage.removeItem(MEM); } catch (e) {}
+      try { if (f.remember.checked) localStorage.setItem(MEM, JSON.stringify({ phone: payload.phone, contact: payload.contact, ig: payload.ig, addr: payload.addr, name: payload.name })); else localStorage.removeItem(MEM); } catch (e) {}
       done(d, payload);
     } catch (err) {
       $('#co-fail').hidden = false;
@@ -173,7 +175,7 @@
     track('purchase', { transaction_id: d.code, currency: 'VND', value: d.total, shipping: d.ship, payment_type: payload.pay === 'ck' ? 'chuyen_khoan' : 'cod', items: lines().map((x) => ({ item_id: x.slug, item_name: x.n, price: x.p, quantity: x.qty })) });
     cart = {}; save();
     $('#co-main').hidden = true; const v = $('#co-done'); v.hidden = false;
-    $('#co-code').textContent = d.code;
+    $('#co-code').textContent = d.code; $('#co-mail').textContent = payload.contact;
     const ck = payload.pay === 'ck';
     $('#co-pay').hidden = true;
     $('#co-st3').innerHTML = ck ? '<b>3.</b> Toydi đã nhận ảnh chuyển khoản, đối chiếu xong là gửi hàng, không thu thêm khi&nbsp;nhận.' : '<b>3.</b> Nhận hàng, kiểm tra rồi mới thanh&nbsp;toán.';

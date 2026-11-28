@@ -22,7 +22,8 @@
   <h2 class="co-h2">Thông tin giao hàng</h2>
   <p class="co-reqnote">Mục có dấu <i class="req">*</i> là bắt buộc.</p>
   <div class="co-f"><label for="co-phone">Số điện thoại <i class="req" aria-hidden="true">*</i></label><input id="co-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="Ví dụ: 0901 234 567…" required><span class="co-er" aria-live="polite"></span></div>
-  <div class="co-f"><label for="co-contact">Instagram hoặc email <i class="req" aria-hidden="true">*</i></label><input id="co-contact" name="contact" autocomplete="email" spellcheck="false" autocapitalize="off" placeholder="Ví dụ: @vy.nguyen hoặc email…" required><small>Để Toydi liên hệ xác nhận đơn.</small><span class="co-er" aria-live="polite"></span></div>
+  <div class="co-f"><label for="co-contact">Email <i class="req" aria-hidden="true">*</i></label><input id="co-contact" name="contact" type="email" inputmode="email" autocomplete="email" spellcheck="false" autocapitalize="off" placeholder="Ví dụ: vy.nguyen@gmail.com…" required><small>Toydi gửi xác nhận đơn qua email này.</small><span class="co-er" aria-live="polite"></span></div>
+  <div class="co-f"><label for="co-ig">Instagram (không bắt buộc)</label><input id="co-ig" name="ig" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="Ví dụ: @vy.nguyen…"><span class="co-er" aria-live="polite"></span></div>
   <div class="co-f"><label for="co-addr">Địa chỉ nhận hàng (trước sáp nhập) <i class="req" aria-hidden="true">*</i></label><textarea id="co-addr" name="addr" rows="2" autocomplete="street-address" placeholder="Ví dụ: 12 Bạch Đằng, P. Thạch Thang, Q. Hải Châu, Đà Nẵng…" required></textarea><small>Ghi theo địa chỉ cũ trước sáp nhập: số nhà, đường, phường/xã, quận/huyện, tỉnh/thành.</small><span class="co-er" aria-live="polite"></span></div>
   <div class="co-f"><label for="co-name">Tên người nhận (không bắt buộc)</label><input id="co-name" name="name" autocomplete="name" placeholder="Ví dụ: Vy…"></div>
   <div class="co-f"><span class="co-lg" id="co-lgp">Thanh toán</span><div class="co-chips" role="radiogroup" aria-labelledby="co-lgp"><label><input type="radio" name="pay" value="cod" checked>Khi nhận hàng (COD)</label><label><input type="radio" name="pay" value="ck">Chuyển khoản</label></div></div>
@@ -51,14 +52,14 @@
  <div class="co-tick" aria-hidden="true">✓</div>
  <h1 class="co-h1">Toydi đã <em>nhận đơn</em></h1>
  <p class="co-code" id="co-code"></p>
- <p class="co-msg">Toydi sẽ liên hệ qua số điện thoại hoặc Instagram/email bạn để&nbsp;lại.</p>
+ <p class="co-msg">Toydi vừa gửi email xác nhận đã nhận đơn tới <b id="co-mail"></b>. Không thấy thì bạn xem thêm mục Spam/Quảng&nbsp;cáo nhé.</p>
  <div class="co-pay" id="co-pay" hidden>
   <p class="pt">Chuyển khoản để Toydi giao hàng</p>
   <div class="co-qr" id="co-qr" role="img" aria-label="Mã VietQR chuyển khoản"></div>
   <dl><div><dt>Ngân hàng</dt><dd>TPBank</dd></div><div><dt>Chủ tài khoản</dt><dd translate="no">HO THU THUY</dd></div><div><dt>Số tài khoản</dt><dd>0320 2182 901 <button type="button" class="co-copy" data-copy="03202182901">Chép</button></dd></div><div><dt>Số tiền</dt><dd id="co-amt"></dd></div><div><dt>Nội dung</dt><dd><b id="co-memo"></b> <button type="button" class="co-copy" id="co-memo-copy" data-copy="">Chép</button></dd></div></dl>
   <small>Quét bằng app ngân hàng bất kỳ. Giữ đúng nội dung để Toydi đối chiếu&nbsp;nhanh.</small>
  </div>
- <ol class="co-steps"><li><b>1.</b> Toydi liên hệ xác nhận đơn trong 1–2&nbsp;giờ.</li><li><b>2.</b> Đóng hộp trơn, giao tiêu chuẩn 1–4&nbsp;ngày.</li><li id="co-st3"></li></ol>
+ <ol class="co-steps"><li><b>1.</b> Toydi kiểm tra và gửi email xác nhận chính thức trong 1–2&nbsp;giờ.</li><li><b>2.</b> Đóng hộp trơn, giao tiêu chuẩn 1–4&nbsp;ngày.</li><li id="co-st3"></li></ol>
  <p class="co-msg">Cần sửa đơn? <a href="https://www.instagram.com/toydi.vn/" target="_blank" rel="noopener">Nhắn Instagram @toydi.vn</a> kèm&nbsp;mã&nbsp;đơn.</p>
  <a class="pill" href="../san-pham/index.html">Xem tiếp sản phẩm</a>
 </div>
