@@ -192,7 +192,7 @@
     document.addEventListener('visibilitychange', () => document.hidden ? clearTimeout(t) : plan());
     // ảnh nền slide 2 trở đi: gắn sau khi trang tải xong
     const lb = () => S.forEach(s => { if (s.dataset.bgs) { s.style.cssText += ';' + s.dataset.bgs; delete s.dataset.bgs; } });
-    if (document.readyState === 'complete') setTimeout(lb, 1200); else addEventListener('load', () => setTimeout(lb, 1200));
+    if (document.readyState === 'complete') setTimeout(lb, 4000); else addEventListener('load', () => setTimeout(lb, 4000));
     go(0);
     D.forEach(d => d.addEventListener('click', lb)); $$('.harr', hs).forEach(b => b.addEventListener('click', lb)); hs.addEventListener('touchstart', lb, { passive: true, once: true });
   }
