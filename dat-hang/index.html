@@ -26,7 +26,15 @@
   <div class="co-f"><label for="co-addr">Địa chỉ nhận hàng (trước sáp nhập) <i class="req" aria-hidden="true">*</i></label><textarea id="co-addr" name="addr" rows="2" autocomplete="street-address" placeholder="Ví dụ: 12 Bạch Đằng, P. Thạch Thang, Q. Hải Châu, Đà Nẵng…" required></textarea><small>Ghi theo địa chỉ cũ trước sáp nhập: số nhà, đường, phường/xã, quận/huyện, tỉnh/thành.</small><span class="co-er" aria-live="polite"></span></div>
   <div class="co-f"><label for="co-name">Tên người nhận (không bắt buộc)</label><input id="co-name" name="name" autocomplete="name" placeholder="Ví dụ: Vy…"></div>
   <div class="co-f"><span class="co-lg" id="co-lgp">Thanh toán</span><div class="co-chips" role="radiogroup" aria-labelledby="co-lgp"><label><input type="radio" name="pay" value="cod" checked>Khi nhận hàng (COD)</label><label><input type="radio" name="pay" value="ck">Chuyển khoản</label></div></div>
-  <div class="co-bank" id="co-bank" hidden><p><b>TPBank</b> · <span translate="no">HO THU THUY</span></p><p class="acc"><span>0320 2182 901</span><button type="button" class="co-copy" data-copy="03202182901">Chép số TK</button></p><small>Bấm xác nhận xong sẽ có mã QR kèm sẵn số tiền và nội dung chuyển&nbsp;khoản.</small></div>
+  <div class="co-bank" id="co-bank" hidden>
+   <p class="co-bstep"><b>Bước 1.</b> Chuyển khoản trước, quét mã hoặc chép thông tin bên dưới</p>
+   <div class="co-bgrid"><div class="co-qr" id="co-bqr" role="img" aria-label="Mã VietQR chuyển khoản"></div>
+   <dl><div><dt>Ngân hàng</dt><dd>TPBank</dd></div><div><dt>Chủ TK</dt><dd translate="no">HO THU THUY</dd></div><div><dt>Số TK</dt><dd>0320 2182 901 <button type="button" class="co-copy" data-copy="03202182901">Chép</button></dd></div><div><dt>Số tiền</dt><dd id="co-bamt"></dd></div><div><dt>Nội dung</dt><dd><span id="co-bmemo"></span> <button type="button" class="co-copy" id="co-bmemo-copy" data-copy="">Chép</button></dd></div></dl></div>
+   <p class="co-bstep"><b>Bước 2.</b> Tải ảnh chụp màn hình giao dịch <i class="req" aria-hidden="true">*</i></p>
+   <label class="co-rc" id="co-rc"><input type="file" id="co-receipt" accept="image/*"><span class="co-rc-in" id="co-rc-in">＋ Chọn ảnh chuyển khoản</span><img id="co-rc-img" alt="Ảnh chuyển khoản đã chọn" hidden></label>
+   <span class="co-er" id="co-rc-er" aria-live="polite"></span>
+   <small>Chỉ khi có ảnh chuyển khoản, nút xác nhận đơn mới bấm được. Toydi đối chiếu rồi gửi hàng, không thu thêm khi&nbsp;nhận.</small>
+  </div>
   <div class="co-f"><label for="co-note">Ghi chú (không bắt buộc)</label><textarea id="co-note" name="note" rows="2" placeholder="Ví dụ: giao giờ hành chính, gọi trước 15 phút…"></textarea></div>
   <input class="co-hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
   <div class="co-sum" id="co-sum"></div>

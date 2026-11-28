@@ -78,6 +78,7 @@
     $('#co-sum').innerHTML = t.sub ? `<p><span>Tạm tính</span><span>${vnd(t.sub)}</span></p>${t.disc ? `<p class="co-disc"><span>Combo đồ chơi + gel/bao cao su (−5%)</span><span>−${vnd(t.disc)}</span></p>` : ''}<p><span>Phí ship</span><span>${t.ship ? vnd(t.ship) : 'Miễn phí'}</span></p><p class="tot"><span>Tổng</span><span>${vnd(t.tot)}</span></p>` : '';
     $('#co-form').hidden = !ls.length;
     $('#co-submit').textContent = `Xác nhận đặt hàng · ${vnd(t.tot)}`;
+    if (typeof bank === 'function') bank();
   };
   co.addEventListener('click', (ev) => {
     const q = ev.target.closest('[data-q]'); if (!q) return;
@@ -89,7 +90,41 @@
   const f = $('#co-form');
   const MEM = 'td_buyer';
   try { const m = JSON.parse(localStorage.getItem(MEM) || 'null'); if (m) { ['phone', 'contact', 'addr', 'name'].forEach((k) => { if (m[k]) f.elements[k].value = m[k]; }); f.remember.checked = true; } } catch (e) {}
-  f.addEventListener('change', (ev) => { if (ev.target.name === 'pay') $('#co-bank').hidden = ev.target.value !== 'ck'; });
+  // chuyển khoản: mã tham chiếu tạo sẵn trên máy, khách chuyển trước rồi tải ảnh giao dịch mới được gửi đơn
+  const REF = (() => { try { const o = sessionStorage.getItem('td_ref'); if (o) return o; } catch (e) {} const a = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let r = 'TOYDI'; for (let i = 0; i < 6; i++) r += a[Math.floor(Math.random() * a.length)]; try { sessionStorage.setItem('td_ref', r); } catch (e) {} return r; })();
+  let receipt = null;
+  const isCK = () => f.pay.value === 'ck';
+  const bank = () => {
+    const ck = isCK(); $('#co-bank').hidden = !ck;
+    const sb = $('#co-submit'); const t = totals();
+    if (ck) {
+      $('#co-bamt').textContent = vnd(t.tot); $('#co-bmemo').textContent = REF; $('#co-bmemo-copy').dataset.copy = REF;
+      if (bank.amt !== t.tot) { bank.amt = t.tot; try { const q = window.qrcode(0, 'M'); q.addData(vietqr(t.tot, REF)); q.make(); $('#co-bqr').innerHTML = q.createSvgTag({ cellSize: 4, margin: 2, scalable: true }); } catch (e) { $('#co-bqr').hidden = true; } }
+    }
+    const lock = ck && !receipt;
+    sb.disabled = lock; sb.classList.toggle('locked', lock);
+    if (t.sub) sb.textContent = lock ? 'Tải ảnh chuyển khoản để xác nhận đơn' : `Xác nhận đặt hàng · ${vnd(t.tot)}`;
+  };
+  // nén ảnh về JPEG ≤1280px để gửi nhẹ
+  const shrink = (file) => new Promise((ok, no) => {
+    const u = URL.createObjectURL(file), im = new Image();
+    im.onload = () => { const k = Math.min(1, 1280 / Math.max(im.width, im.height)); const c = document.createElement('canvas'); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); URL.revokeObjectURL(u); ok(c.toDataURL('image/jpeg', 0.82)); };
+    im.onerror = () => { URL.revokeObjectURL(u); no(new Error('img')); }; im.src = u;
+  });
+  $('#co-receipt').addEventListener('change', async (ev) => {
+    const file = ev.target.files[0]; const er = $('#co-rc-er'); er.textContent = '';
+    if (!file) return;
+    if (!/^image\//.test(file.type) || file.size > 15e6) { er.textContent = 'Bạn chọn giúp Toydi một file ảnh (JPG, PNG…) dưới 15MB nhé.'; return; }
+    $('#co-rc-in').textContent = 'Đang xử lý ảnh…';
+    try {
+      const url = await shrink(file); receipt = url.split(',')[1];
+      const img = $('#co-rc-img'); img.src = url; img.hidden = false; $('#co-rc-in').textContent = 'Đổi ảnh khác'; $('#co-rc').classList.add('has');
+      track('receipt_added');
+    } catch (e) { receipt = null; $('#co-rc-in').textContent = '＋ Chọn ảnh chuyển khoản'; er.textContent = 'Không đọc được ảnh này, bạn thử ảnh khác giúp Toydi nhé.'; }
+    bank();
+  });
+  f.addEventListener('change', (ev) => { if (ev.target.name === 'pay') bank(); });
+  document.addEventListener('td:cart', () => setTimeout(bank, 0));
   $$('.co-copy').forEach((b) => b.addEventListener('click', () => copy(b)));
   function copy(b) { const txt = b.dataset.copy; const ok = () => { const o = b.textContent; b.textContent = 'Đã chép'; setTimeout(() => { b.textContent = o; }, 1200); }; try { navigator.clipboard.writeText(txt).then(ok, ok); } catch (e) { ok(); } }
 
@@ -107,13 +142,14 @@
   };
   ['phone', 'contact', 'addr'].forEach((n) => f.elements[n].addEventListener('blur', () => { if (f.elements[n].closest('.co-f').classList.contains('bad')) check(); }));
 
-  const ERR = { phone: 'Số điện thoại chưa đúng, bạn xem lại giúp Toydi nhé.', contact: 'Instagram hoặc email chưa đúng, bạn xem lại giúp Toydi nhé.', addr: 'Địa chỉ còn thiếu, bạn ghi rõ hơn giúp Toydi nhé.', items: 'Giỏ hàng có món không còn bán, bạn tải lại trang giúp Toydi nhé.', busy: 'Bạn vừa gửi đơn rồi. Đợi vài phút hoặc nhắn Instagram nếu cần sửa đơn.', server: 'Hệ thống đang bận.' };
+  const ERR = { phone: 'Số điện thoại chưa đúng, bạn xem lại giúp Toydi nhé.', contact: 'Instagram hoặc email chưa đúng, bạn xem lại giúp Toydi nhé.', addr: 'Địa chỉ còn thiếu, bạn ghi rõ hơn giúp Toydi nhé.', receipt: 'Ảnh chuyển khoản chưa gửi được, bạn chọn lại ảnh giúp Toydi nhé.', items: 'Giỏ hàng có món không còn bán, bạn tải lại trang giúp Toydi nhé.', busy: 'Bạn vừa gửi đơn rồi. Đợi vài phút hoặc nhắn Instagram nếu cần sửa đơn.', server: 'Hệ thống đang bận.' };
   f.addEventListener('submit', async (ev) => {
     ev.preventDefault();
     if (!check()) return;
+    if (isCK() && !receipt) { $('#co-rc-er').textContent = 'Bạn tải ảnh chụp giao dịch chuyển khoản lên trước nhé.'; $('#co-rc').scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
     const b = $('#co-submit'); b.disabled = true; b.textContent = 'Đang gửi đơn…';
     $('#co-fail').hidden = true;
-    const payload = { phone: f.phone.value.trim(), contact: f.contact.value.trim(), addr: f.addr.value.trim(), name: f.name.value.trim(), note: f.note.value.trim(), pay: f.pay.value, website: f.website.value, items: lines().map((x) => ({ slug: x.slug, qty: x.qty })) };
+    const payload = { phone: f.phone.value.trim(), contact: f.contact.value.trim(), addr: f.addr.value.trim(), name: f.name.value.trim(), note: f.note.value.trim(), pay: f.pay.value, website: f.website.value, ref: isCK() ? REF : '', receipt: isCK() ? receipt : '', items: lines().map((x) => ({ slug: x.slug, qty: x.qty })) };
     try {
       const res = await fetch(API, { method: 'POST', body: JSON.stringify(payload), redirect: 'follow' });
       const d = await res.json();
@@ -123,7 +159,7 @@
     } catch (err) {
       $('#co-fail').hidden = false;
       $('#co-fail').innerHTML = `${esc(ERR[err.code] || 'Gửi đơn chưa được, có thể do mạng.')} Thử lại, hoặc <a href="${IG}" target="_blank" rel="noopener">nhắn Instagram @toydi.vn</a> để đặt.`;
-      b.disabled = false; render();
+      b.disabled = false; render(); bank();
       track('order_error', { reason: err.code || 'network' });
     }
   });
@@ -134,18 +170,14 @@
   const vietqr = (amount, memo) => { const p = tlv('00', '01') + tlv('01', '12') + tlv('38', tlv('00', 'A000000727') + tlv('01', tlv('00', BANK.bin) + tlv('01', BANK.acc)) + tlv('02', 'QRIBFTTA')) + tlv('53', '704') + tlv('54', String(amount)) + tlv('58', 'VN') + tlv('62', tlv('08', memo)) + '6304'; return p + crc16(p); };
 
   function done(d, payload) {
-    const memo = d.code.replace(/-/g, '');
     track('purchase', { transaction_id: d.code, currency: 'VND', value: d.total, shipping: d.ship, payment_type: payload.pay === 'ck' ? 'chuyen_khoan' : 'cod', items: lines().map((x) => ({ item_id: x.slug, item_name: x.n, price: x.p, quantity: x.qty })) });
     cart = {}; save();
     $('#co-main').hidden = true; const v = $('#co-done'); v.hidden = false;
     $('#co-code').textContent = d.code;
     const ck = payload.pay === 'ck';
-    $('#co-pay').hidden = !ck;
-    $('#co-st3').innerHTML = ck ? '<b>3.</b> Tiền về là Toydi gửi hàng, không thu thêm khi&nbsp;nhận.' : '<b>3.</b> Nhận hàng, kiểm tra rồi mới thanh&nbsp;toán.';
-    if (ck) {
-      $('#co-amt').textContent = vnd(d.total); $('#co-memo').textContent = memo; $('#co-memo-copy').dataset.copy = memo;
-      try { const q = window.qrcode(0, 'M'); q.addData(vietqr(d.total, memo)); q.make(); $('#co-qr').innerHTML = q.createSvgTag({ cellSize: 4, margin: 2, scalable: true }); } catch (e) { $('#co-qr').hidden = true; }
-    }
+    $('#co-pay').hidden = true;
+    $('#co-st3').innerHTML = ck ? '<b>3.</b> Toydi đã nhận ảnh chuyển khoản, đối chiếu xong là gửi hàng, không thu thêm khi&nbsp;nhận.' : '<b>3.</b> Nhận hàng, kiểm tra rồi mới thanh&nbsp;toán.';
+    try { sessionStorage.removeItem('td_ref'); } catch (e) {}
     scrollTo({ top: 0, behavior: 'smooth' }); v.focus();
   }
   render();

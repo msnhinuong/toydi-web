@@ -1023,3 +1023,19 @@ body.has-cartbar{padding-bottom:84px}
 .co-hint.ok{background:rgba(120,200,150,.14)}
 .co-disc span:last-child{color:#7fd1a0}
 .addon s{opacity:.55;font-weight:400}
+/* chuyển khoản trước khi xác nhận */
+.co-bank{display:flex;flex-direction:column;gap:10px}
+.co-bstep{margin:0;font-size:14px}
+.co-bgrid{display:grid;grid-template-columns:150px minmax(0,1fr);gap:14px;align-items:center}
+.co-bgrid .co-qr{background:#fff;border-radius:12px;padding:6px;width:150px}
+.co-bgrid .co-qr svg{display:block;width:100%;height:auto}
+.co-bgrid dl{margin:0;display:grid;gap:4px;font-size:14px}
+.co-bgrid dl div{display:flex;gap:8px;justify-content:space-between;min-width:0}
+.co-bgrid dt{opacity:.7}.co-bgrid dd{margin:0;text-align:right;font-weight:600;overflow-wrap:anywhere}
+@media (max-width:420px){.co-bgrid{grid-template-columns:1fr}.co-bgrid .co-qr{margin:0 auto;width:170px}}
+.co-rc{position:relative;display:flex;align-items:center;justify-content:center;gap:12px;min-height:64px;padding:12px;border:1.5px dashed rgba(241,230,227,.45);border-radius:14px;cursor:pointer;text-align:center;font-weight:600}
+.co-rc input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.co-rc.has{justify-content:flex-start;border-style:solid}
+.co-rc img{max-height:120px;max-width:45%;border-radius:8px;order:-1}
+.co-submit.locked{opacity:.55;cursor:not-allowed}
+.co-bgrid .co-qr{height:auto;aspect-ratio:auto;line-height:0}
