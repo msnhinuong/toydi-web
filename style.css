@@ -1049,3 +1049,24 @@ body.has-cartbar{padding-bottom:84px}
 .co-rc img{max-height:120px;max-width:45%;border-radius:8px;order:-1}
 .co-submit.locked{opacity:.55;cursor:not-allowed}
 .co-bgrid .co-qr{height:auto;aspect-ratio:auto;line-height:0}
+/* nút thêm giỏ trên thẻ sản phẩm: rõ hơn, bấm dễ hơn */
+.card .dm.ord-on{display:flex;justify-content:center;align-items:center;width:100%;min-height:42px;background:var(--rose);border-color:var(--rose);color:#1a0d14!important;cursor:pointer;transition:transform .15s,background .15s}
+.card .dm.ord-on:hover{background:#e590a5}
+.card .dm.ord-on:active{transform:scale(.97)}
+.card .dm.ord-on.added{background:var(--cream);border-color:var(--cream)}
+/* /ig/ link in bio */
+.igpage{padding-block:20px 40px}
+.ighead{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;margin-bottom:16px}
+.ighead p{max-width:34ch;opacity:.85;font-size:15px}
+.iggrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (min-width:760px){.iggrid{grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}}
+.igc{display:flex;flex-direction:column;gap:8px;min-width:0;background:rgba(241,230,227,.05);border-radius:16px;padding:8px}
+.igi img{display:block;width:100%;height:auto;aspect-ratio:1;object-fit:cover;border-radius:12px}
+.igt{display:flex;flex-direction:column;gap:2px;padding:0 4px}
+.igt b{font-weight:600;font-size:15px;line-height:1.3}
+.igt span{color:var(--blush);font-weight:600}
+.igb{display:grid;grid-template-columns:1fr auto;gap:6px}
+.igb .pill{min-height:40px;padding:0 12px;justify-content:center;font-size:11px}
+.igb .ord-off{grid-column:1/-1}
+.iglinks{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:20px}
+.cartbar .cb1{font-style:normal;white-space:nowrap}

@@ -35,7 +35,7 @@
     if ($('#checkout') || $('.mbar')) return;
     if (!bar) { bar = document.createElement('a'); bar.className = 'cartbar'; bar.href = R + 'dat-hang/index.html'; document.body.append(bar); }
     const t = totals();
-    bar.innerHTML = `<span><b>${n} món</b> · ${vnd(t.sub - t.disc)}${t.disc ? ' (đã −5%)' : ''}${t.sub < FREE ? `<small>Thêm ${vnd(FREE - t.sub)} để miễn phí ship</small>` : '<small>Đã được miễn phí ship</small>'}</span><i>Đặt hàng →</i>`;
+    bar.innerHTML = `<span><em class="cb1"><b>${n} món</b> · ${vnd(t.sub - t.disc)}${t.disc ? ' (đã −5%)' : ''}</em>${t.sub < FREE ? `<small>Thêm ${vnd(FREE - t.sub)} để miễn phí ship</small>` : '<small>Đã được miễn phí ship</small>'}</span><i>Đặt hàng →</i>`;
     bar.hidden = !n; document.body.classList.toggle('has-cartbar', !!n);
   };
   const item = (el) => ({ slug: el.dataset.slug, n: el.dataset.n, p: +el.dataset.p, img: el.dataset.img });
@@ -52,7 +52,7 @@
     if (el.dataset.also) { const [slug, n, p, img] = el.dataset.also.split('|'); if (!cart[slug]) add({ slug, n, p: +p, img }); }
     toast(`Đã thêm ${esc(el.dataset.also ? 'cả hai món' : el.dataset.n)} vào giỏ · <a href="${R}dat-hang/index.html">Xem giỏ</a>`);
     document.dispatchEvent(new Event('td:cart'));
-    if (el.classList.contains('pill')) { const o = el.textContent; el.textContent = '✓ Đã thêm'; setTimeout(() => { el.textContent = o; }, 1400); }
+    if (el.classList.contains('pill') || el.classList.contains('dm')) { const o = el.textContent; el.textContent = '✓ Đã thêm'; el.classList.add('added'); setTimeout(() => { el.textContent = o; el.classList.remove('added'); }, 1400); }
   }, true);
   document.addEventListener('keydown', (ev) => { const el = ev.target.closest && ev.target.closest('span[data-add]'); if (el && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); el.click(); } });
   count();
